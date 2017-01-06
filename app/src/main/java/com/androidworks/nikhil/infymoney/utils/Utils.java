@@ -60,9 +60,9 @@ public class Utils {
                                 DataStore.getInstance(activity).storeBalance(Utils.getBalance(strbody, true));
                             else
                                 DataStore.getInstance(activity).storeBalance(Utils.getBalance(strbody, false));
-                            count++;
+                            //count++  had initially put this, don't klnow for what, removing..
                         }
-                        if (!strbody.contains("topped"))
+                        if (!strbody.contains("topped") && !strbody.contains("insufficient") )
                         {
                             SMS sms = new SMS();
                             sms.setAddress(strAddress);

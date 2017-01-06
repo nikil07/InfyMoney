@@ -1,20 +1,16 @@
 package com.androidworks.nikhil.infymoney.ui;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,10 +20,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.androidworks.nikhil.infymoney.BuildConfig;
 import com.androidworks.nikhil.infymoney.R;
 import com.androidworks.nikhil.infymoney.adapters.MessagesAdapter;
-import com.androidworks.nikhil.infymoney.model.SMS;
 import com.androidworks.nikhil.infymoney.utils.DataStore;
 import com.androidworks.nikhil.infymoney.utils.Utils;
 
@@ -42,29 +36,33 @@ public class SMSActivity extends AppCompatActivity {
     TextView balance;
     @BindView(R.id.add_fund_button)
     Button addFunds;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sms);
         ButterKnife.bind(this);
-        if (Build.VERSION.SDK_INT >= 23) {
-            requestPermission();
-        } else {
-            Utils.getMessages(this);
-            MessagesAdapter adapter = new MessagesAdapter(this, DataStore.getInstance(this).getMessages());
-            listView.setAdapter(adapter);
+        context = this;
+        if (DataStore.getInstance(this).getMessages().isEmpty())
+            askForAccount();
+        else {
+            if (Build.VERSION.SDK_INT >= 23) {
+                requestPermission();
+            } else {
+                Utils.getMessages(SMSActivity.this);
+                MessagesAdapter adapter = new MessagesAdapter(context, DataStore.getInstance(context).getMessages());
+                listView.setAdapter(adapter);
+            }
         }
 
         addFunds.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(SMSActivity.this, AddFunds.class));
+                startActivity(new Intent(SMSActivity.this, AddFundsActivity.class));
             }
         });
 
-        if (!DataStore.getInstance(this).isLoggedIn())
-            askForAccount();
         DataStore.getInstance(this).setIsLoggedIn();
 
     }
@@ -146,6 +144,13 @@ public class SMSActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int whichButton) {
                 if (accountET.getText() != null)
                     DataStore.getInstance(SMSActivity.this).storeAccount(accountET.getText().toString());
+                if (Build.VERSION.SDK_INT >= 23) {
+                    requestPermission();
+                } else {
+                    Utils.getMessages(SMSActivity.this);
+                    MessagesAdapter adapter = new MessagesAdapter(context, DataStore.getInstance(context).getMessages());
+                    listView.setAdapter(adapter);
+                }
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -169,7 +174,10 @@ public class SMSActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case R.id.add_funds:
-                startActivity(new Intent(this, AddFunds.class));
+                startActivity(new Intent(this, AddFundsActivity.class));
+                return true;
+            case R.id.edit_account:
+                askForAccount();
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -62,11 +62,12 @@ public class MessagesAdapter extends BaseAdapter {
         }
 
         SMS item = smsItems.get(position);
-       // Log.d("nikhil",item.getMessageBody());
+
         if (StringUtils.isNotEmpty(item.getAddress()) && (item.getLongDate() != 0) && (StringUtils.isNotEmpty(item.getMessageBody()))) {
-            viewHolder.address.setText(item.getAddress());
+            String body = item.getMessageBody();
+            viewHolder.address.setText("Rs." + body.substring(body.indexOf("Rs.") + 3, body.indexOf("to")).trim());
             viewHolder.date.setText(Utils.getDate(item.getLongDate()));
-            viewHolder.body.setText(item.getMessageBody());
+            viewHolder.body.setText(body.substring(body.indexOf("to") + 2, body.indexOf("Available")).trim());
         }
 
         return convertView;

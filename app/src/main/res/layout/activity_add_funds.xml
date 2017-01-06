@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".ui.AddFunds">
+    tools:context=".ui.AddFundsActivity">
 
 
     <TextView
@@ -19,19 +19,20 @@
         android:textSize="30sp" />
 
     <TextView
-        android:id="@+id/add_account"
+        android:id="@+id/add_funds_account"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/add_funds_balance"
         android:layout_centerHorizontal="true"
         android:text="Account"
+        android:visibility="visible"
         android:textSize="30sp" />
 
     <EditText
         android:id="@+id/add_funds_amount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/add_account"
+        android:layout_below="@+id/add_funds_account"
         android:layout_marginTop="10dp"
         android:hint="Amount"
         android:inputType="number"
@@ -41,7 +42,7 @@
         android:id="@+id/add_fund_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/add_account"
+        android:layout_below="@+id/add_funds_account"
         android:layout_marginLeft="50dp"
         android:layout_marginTop="10dp"
         android:layout_toRightOf="@+id/add_funds_amount"
