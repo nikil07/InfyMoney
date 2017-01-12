@@ -4,9 +4,12 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -37,6 +40,7 @@ public class SMSActivity extends AppCompatActivity {
     @BindView(R.id.add_fund_button)
     Button addFunds;
     private Context context;
+    MessagesAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,16 +48,12 @@ public class SMSActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sms);
         ButterKnife.bind(this);
         context = this;
-        if (DataStore.getInstance(this).getMessages().isEmpty())
+
+        if (DataStore.getMessages().isEmpty()) {
             askForAccount();
-        else {
-            if (Build.VERSION.SDK_INT >= 23) {
-                requestPermission();
-            } else {
-                Utils.getMessages(SMSActivity.this);
-                MessagesAdapter adapter = new MessagesAdapter(context, DataStore.getInstance(context).getMessages());
-                listView.setAdapter(adapter);
-            }
+        } else {
+            adapter = new MessagesAdapter(context, DataStore.getMessages());
+            listView.setAdapter(adapter);
         }
 
         addFunds.setOnClickListener(new View.OnClickListener() {
@@ -63,7 +63,11 @@ public class SMSActivity extends AppCompatActivity {
             }
         });
 
-        DataStore.getInstance(this).setIsLoggedIn();
+        if (DataStore.isLoggedIn()) {
+            Utils.updateBalance(this);
+            balance.setText(DataStore.getBalance());
+        }
+        DataStore.setIsLoggedIn();
 
     }
 
@@ -95,8 +99,9 @@ public class SMSActivity extends AppCompatActivity {
             }
         } else {
             Utils.getMessages(this);
-            balance.setText(DataStore.getInstance(this).getBalance());
-            MessagesAdapter adapter = new MessagesAdapter(this, DataStore.getInstance(this).getMessages());
+            Utils.updateBalance(this);
+            balance.setText(DataStore.getBalance());
+            adapter = new MessagesAdapter(this, DataStore.getMessages());
             listView.setAdapter(adapter);
         }
     }
@@ -110,8 +115,9 @@ public class SMSActivity extends AppCompatActivity {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Utils.getMessages(this);
-                    balance.setText(DataStore.getInstance(this).getBalance());
-                    MessagesAdapter adapter = new MessagesAdapter(this, DataStore.getInstance(this).getMessages());
+                    Utils.updateBalance(this);
+                    balance.setText(DataStore.getBalance());
+                    adapter = new MessagesAdapter(this, DataStore.getMessages());
                     listView.setAdapter(adapter);
 
                     // permission was granted, yay! Do the
@@ -142,13 +148,15 @@ public class SMSActivity extends AppCompatActivity {
         dialogBuilder.setMessage("Please enter the last 6 digits of your associated account number");
         dialogBuilder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                if (accountET.getText() != null)
-                    DataStore.getInstance(SMSActivity.this).storeAccount(accountET.getText().toString());
+                if (accountET.getText() != null) {
+                    DataStore.storeAccount(accountET.getText().toString());
+                }
                 if (Build.VERSION.SDK_INT >= 23) {
                     requestPermission();
                 } else {
                     Utils.getMessages(SMSActivity.this);
-                    MessagesAdapter adapter = new MessagesAdapter(context, DataStore.getInstance(context).getMessages());
+                    Utils.updateBalance(SMSActivity.this);
+                    adapter = new MessagesAdapter(context, DataStore.getMessages());
                     listView.setAdapter(adapter);
                 }
             }
@@ -156,6 +164,14 @@ public class SMSActivity extends AppCompatActivity {
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 Utils.showToast(SMSActivity.this, "We will need your account number to add funds, please go to settings and add an account number");
+                if (Build.VERSION.SDK_INT >= 23) {
+                    requestPermission();
+                } else {
+                    Utils.getMessages(SMSActivity.this);
+                    Utils.updateBalance(SMSActivity.this);
+                    adapter = new MessagesAdapter(context, DataStore.getMessages());
+                    listView.setAdapter(adapter);
+                }
             }
         });
         AlertDialog b = dialogBuilder.create();
@@ -178,6 +194,11 @@ public class SMSActivity extends AppCompatActivity {
                 return true;
             case R.id.edit_account:
                 askForAccount();
+                return true;
+            case R.id.refresh:
+                Utils.getMessages(this);
+                Utils.updateBalance(this);
+                adapter.updateData();
                 return true;
         }
         return super.onOptionsItemSelected(item);

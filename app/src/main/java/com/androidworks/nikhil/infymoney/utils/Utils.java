@@ -32,7 +32,7 @@ public class Utils {
     public static void getMessages(Activity activity) {
 
         int count = 0;
-        DataStore.getInstance(activity).deleteAllMessages();
+        DataStore.deleteAllMessages();
 
         StringBuilder smsBuilder = new StringBuilder();
         final String SMS_URI_INBOX = "content://sms/inbox";
@@ -53,22 +53,20 @@ public class Utils {
                     String strbody = cur.getString(index_Body);
                     long longDate = cur.getLong(index_Date);
 
-
                     if (strAddress.contains("IMONEY")) {
-                        if (count == 0) {
-                            if (strbody.contains("topped"))
-                                DataStore.getInstance(activity).storeBalance(Utils.getBalance(strbody, true));
-                            else
-                                DataStore.getInstance(activity).storeBalance(Utils.getBalance(strbody, false));
-                            //count++  had initially put this, don't klnow for what, removing..
-                        }
-                        if (!strbody.contains("topped") && !strbody.contains("insufficient") )
-                        {
+//                        if (count == 0) {
+//                            if (strbody.contains("topped"))
+//                                DataStore.storeBalance(Utils.getBalance(strbody, true));
+//                            else
+//                                DataStore.storeBalance(Utils.getBalance(strbody, false));
+//                            //count++ ,  had initially put this, don't klnow for what, removing..
+//                        }
+                        if (!strbody.contains("topped") && !strbody.contains("insufficient")) {
                             SMS sms = new SMS();
                             sms.setAddress(strAddress);
                             sms.setLongDate(longDate);
                             sms.setMessageBody(strbody);
-                            DataStore.getInstance(activity).storeMessages(sms);
+                            DataStore.storeMessages(sms);
                             smsBuilder.append("[ ");
                             smsBuilder.append(strAddress + ", ");
                             smsBuilder.append(intPerson + ", ");
@@ -87,6 +85,35 @@ public class Utils {
             } else {
                 smsBuilder.append("no result!");
             } // end if
+        } catch (SQLiteException ex) {
+            Log.d("SQLiteException", ex.getMessage());
+        }
+    }
+
+    public static void updateBalance(Activity activity) {
+        final String SMS_URI_INBOX = "content://sms/inbox";
+        int count = 0;
+        try {
+            Uri uri = Uri.parse(SMS_URI_INBOX);
+            String[] projection = new String[]{"_id", "address", "person", "body", "date"};
+            Cursor cur = activity.getContentResolver().query(uri, projection, null, null, "date desc");
+            if (cur.moveToFirst()) {
+                while (cur.moveToNext() && count < 1) {
+                    int index_Address = cur.getColumnIndex("address");
+                    int index_Body = cur.getColumnIndex("body");
+                    String strAddress = cur.getString(index_Address);
+                    String strbody = cur.getString(index_Body);
+                    if (strAddress.contains("IMONEY")) {
+                        if (strbody.contains("topped"))
+                            DataStore.storeBalance(Utils.getBalance(strbody, true));
+                        else
+                            DataStore.storeBalance(Utils.getBalance(strbody, false));
+                        count++;
+                    }
+
+                }
+            }
+            cur.close();
         } catch (SQLiteException ex) {
             Log.d("SQLiteException", ex.getMessage());
         }
@@ -159,4 +186,5 @@ public class Utils {
     public static void showToast(Context context, String message) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show();
     }
+
 }

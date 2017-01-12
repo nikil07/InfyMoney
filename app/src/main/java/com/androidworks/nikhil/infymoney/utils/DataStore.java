@@ -16,72 +16,65 @@ import java.util.ArrayList;
  */
 public class DataStore {
 
-    private static DataStore instance;
-    private static SharedPreferences sharedPreferences;
     static Gson gson = new Gson();
-    static ArrayList<String> countries;
     static ArrayList<SMS> timeZones;
 
     private DataStore() {
         // private constructor to enforce singleton
     }
 
-    public static DataStore getInstance(Context context) {
-        if (instance == null) {
-            instance = new DataStore();
-            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-            countries = new ArrayList<>();
-            timeZones = new ArrayList<>();
-        }
-        return instance;
+    public static SharedPreferences getSharedPreferences() {
+        return PreferenceManager.getDefaultSharedPreferences(Application.getAppContext());
     }
 
-    public void storeMessages(SMS item) {
+    private static SharedPreferences.Editor getEditor() {
+        return getSharedPreferences().edit();
+    }
 
-        timeZones = gson.fromJson(sharedPreferences.getString(Constants.SHARED_PREF_SMS, timeZones.toString()), new TypeToken<ArrayList<SMS>>() {
+    public static void storeMessages(SMS item) {
+
+        timeZones = new ArrayList<>();
+        timeZones = gson.fromJson(getSharedPreferences().getString(Constants.SHARED_PREF_SMS, timeZones.toString()), new TypeToken<ArrayList<SMS>>() {
         }.getType());
         timeZones.add(item);
-        sharedPreferences.edit().putString(Constants.SHARED_PREF_SMS, gson.toJson(timeZones)).apply();
+        getEditor().putString(Constants.SHARED_PREF_SMS, gson.toJson(timeZones)).apply();
     }
 
-    public ArrayList<SMS> getMessages() {
+    public static ArrayList<SMS> getMessages() {
 
-        Log.d("nikhil", "messages items list " + gson.fromJson(sharedPreferences.getString(Constants.SHARED_PREF_SMS, timeZones.toString())
-                , new TypeToken<ArrayList<SMS>>() {
-                }.getType()).toString());
-
-        return gson.fromJson(sharedPreferences.getString(Constants.SHARED_PREF_SMS, timeZones.toString())
+        timeZones = new ArrayList<>();
+        return gson.fromJson(getSharedPreferences().getString(Constants.SHARED_PREF_SMS, timeZones.toString())
                 , new TypeToken<ArrayList<SMS>>() {
                 }.getType());
     }
 
-    public void deleteAllMessages() {
-        sharedPreferences.edit().clear().apply();
+    public static void deleteAllMessages() {
         timeZones.clear();
-        sharedPreferences.edit().putString(Constants.SHARED_PREF_SMS, gson.toJson(timeZones)).apply();
+        getEditor().putString(Constants.SHARED_PREF_SMS, gson.toJson(timeZones)).apply();
     }
 
-    public void storeBalance(String balance) {
-        sharedPreferences.edit().putString(Constants.SHARED_PREF_BALANCE, balance).apply();
+    public static void storeBalance(String balance) {
+        getEditor().putString(Constants.SHARED_PREF_BALANCE, balance).apply();
     }
 
-    public String getBalance() {
-        return sharedPreferences.getString(Constants.SHARED_PREF_BALANCE, "Nil");
+    public static String getBalance() {
+        return getSharedPreferences().getString(Constants.SHARED_PREF_BALANCE, "Nil");
     }
 
-    public void storeAccount(String account) {
-        sharedPreferences.edit().putString(Constants.SHARED_PREF_ACCOUNT, account).apply();
+    public static void storeAccount(String account) {
+        getEditor().putString(Constants.SHARED_PREF_ACCOUNT, account).apply();
     }
 
-    public String getAccount() {
-        return sharedPreferences.getString(Constants.SHARED_PREF_ACCOUNT, "");
+    public static String getAccount() {
+        return getSharedPreferences().getString(Constants.SHARED_PREF_ACCOUNT, "");
     }
 
-    public void setIsLoggedIn() {
-        sharedPreferences.edit().putBoolean(Constants.SHARED_PREF_LOGGED, true).apply();
+    public static void setIsLoggedIn() {
+        getEditor().putBoolean(Constants.SHARED_PREF_LOGGED, true).apply();
     }
 
-    public boolean isLoggedIn() {
-        return (sharedPreferences.getBoolean(Constants.SHARED_PREF_LOGGED, false));
+    public static boolean isLoggedIn() {
+        return (getSharedPreferences().getBoolean(Constants.SHARED_PREF_LOGGED, false));
     }
+
 }

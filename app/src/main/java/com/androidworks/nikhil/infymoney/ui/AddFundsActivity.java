@@ -40,13 +40,13 @@ public class AddFundsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_funds);
         ButterKnife.bind(this);
-        balance.setText("Balance : " + DataStore.getInstance(this).getBalance());
-        account.setText(DataStore.getInstance(this).getAccount());
+        balance.setText("Rs." + DataStore.getBalance());
+        account.setText(DataStore.getAccount());
     }
 
     @OnClick(R.id.add_fund_button)
     public void addFunds() {
-        smsBody = "Mycard " + amount.getText().toString() + " " + DataStore.getInstance(this).getAccount();
+        smsBody = "Mycard " + amount.getText().toString() + " " + DataStore.getAccount();
         // Get the default instance of SmsManager
         SmsManager smsManager = SmsManager.getDefault();
         // Send a text based SMS
@@ -84,8 +84,9 @@ public class AddFundsActivity extends AppCompatActivity {
         dialogBuilder.setMessage("Please enter the last 6 digits of your associated account number");
         dialogBuilder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                if (accountET.getText() != null)
-                    DataStore.getInstance(AddFundsActivity.this).storeAccount(accountET.getText().toString());
+                if (accountET.getText() != null) {
+                    DataStore.storeAccount(accountET.getText().toString());
+                }
             }
         });
         dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

@@ -39,6 +39,9 @@ public class MessagesAdapter extends BaseAdapter {
         return smsItems.size();
     }
 
+    public void updateData(){
+        notifyDataSetChanged();
+    }
     @Override
     public Object getItem(int position) {
         return position;

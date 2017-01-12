@@ -3,14 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ui.SMSActivity">
     <item
-    android:id="@+id/add_funds"
-    android:orderInCategory="100"
-    android:title="Add Funds"
-    app:showAsAction="never" />
+        android:id="@+id/refresh"
+        android:orderInCategory="100"
+        android:title="Refresh"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/add_funds"
+        android:orderInCategory="100"
+        android:title="Add Funds"
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/edit_account"
         android:orderInCategory="100"
         android:title="Edit Account"
         app:showAsAction="never" />
+
 </menu>
